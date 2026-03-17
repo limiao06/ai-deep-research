@@ -63,6 +63,7 @@ session "Synthesize Research Report"
   【最终交付与写盘锁死】：使用 `write` 工具，将指南保存为 `{sessionDir}/FINAL_ACTION_PLAN.md`。
   你必须检查 `write` 工具的执行状态！如果发生任何文件系统报错，立刻中止，并向用户输出：'❌ [致命错误] 破壁指南最终落盘失败，推送已取消。'
   
-  只有确认文件绝对保存成功后，你才被允许调用 `exec` 工具执行推送脚本：`python3 \"{baseDir}/push_to_feishu.py\" \"{topic}\" \"{sessionDir}\"`。
-  向用户简短汇报：“物理归档完毕，破壁指南已推送至您的飞书终端，请查收。”"
+  只有确认文件绝对保存成功后，调用 `exec` 工具执行云端映射脚本：`python3 \"{baseDir}/push_to_feishu_docs.py\" \"{topic}\" \"{sessionDir}\"`。
+  向用户简短汇报：“物理归档完毕，报告已转化为富文本云文档，请在飞书接收查阅。”"
+
 
