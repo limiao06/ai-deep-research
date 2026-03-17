@@ -1,0 +1,32 @@
+# AI Deep Research Workflow - First Principles Edition
+input topic: "Research Topic"
+
+agent historian:
+  model: tencentcodingplan/glm-5
+  prompt: "你是科研第一性原理溯源者。不要做平庸的编年史总结。使用 web_search 检索 {topic} 的演进逻辑。你必须输出：1. 【初始假设】：该领域最初是为了解决什么特定的物理/计算限制而建立的当前范式？ 2. 【历史债务】：哪些当年因为算力、数据或观测手段受限而做出的『历史妥协』，至今仍被整个领域当作『不可违背的公理』盲目遵循？"
+
+agent sota_reader:
+  model: tencentcodingplan/glm-5
+  prompt: "你是极其严苛的系统边界审查员。使用 web_search 查找 {topic} 在 arXiv 上的最新学术讨论，并用 pdf 工具阅读全文。禁止复述作者宣称的贡献。你必须直接刺穿表象并提取：1. 【核心妥协 (The Trade-off)】：目前的 SOTA 在哪些维度上做了非零和博弈（例如牺牲了泛化性换取局部精度，或用暴力算力掩盖了数学表达的缺陷）？ 2. 【渐进式死亡 (Asymptotic Wall)】：现有主流架构在物理极限、信息论或计算复杂度上，正在逼近哪堵无法通过『微调架构』跨越的墙？"
+
+agent data_miner:
+  model: tencentcodingplan/glm-5
+  prompt: "你是学术结构洞挖掘者。调用 exec 工具执行本地脚本 `python3 {baseDir}/query_scholar.py \"{topic}\"`。你的目标不是找权威，而是找『裂变点』。你必须提取并分类为：1. 【统治级共识（靶子）】：被引用最多、构筑了当前领域认知天花板的 3 篇文献。2. 【边缘异类（破局点）】：近 1-2 年内发表，引用量不高，但在底层数学机制、跨学科引入或完全背离主流假设的 2-3 篇『异常』文献及其核心主张。"
+
+parallel:
+  history_report = session: historian
+  prompt: "执行溯源，挖掘 {topic} 的历史债务和初始假设。"
+  
+  sota_report = session: sota_reader
+  prompt: "执行审查，定义 {topic} 当前 SOTA 的渐进式死亡边界。"
+
+  data_report = session: data_miner
+  prompt: "执行挖掘，定位 {topic} 的共识靶子与边缘异类。"
+
+session "Synthesize Research Report"
+  model: tencentcodingplan/glm-5
+  context: { history_report, sota_report, data_report }
+  prompt: "你是追求 10 倍效能的 PI。结合上述的历史债务、SOTA的极限边界、以及边缘文献的启发。绝不要写常规综述，你必须输出一份《破壁行动指南》：
+  1. 【核心幻觉 (The Illusion)】：用一句话点破整个 {topic} 领域目前集体陷入的逻辑盲区或错误的资源堆砌方向。
+  2. 【降维打击轴 (The Orthogonal Vector)】：如果主流在追求 A，我们如何通过引入变量 B（例如新的守恒定律、不同的空间变换或数据模态的重新耦合）将问题降维解决？
+  3. 【终局构想 (Final Abstract)】：直接输出 1-2 个能带来量级提升的假想 Paper Abstract，必须明确写出：『现有范式在 X 上的根本缺陷 -> 我们重构的 Y 机制 -> 预期打破的物理/算力限制』。"

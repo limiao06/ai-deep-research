@@ -1,0 +1,29 @@
+# AI Deep Research Workflow
+input topic: "Research Topic"
+
+agent historian:
+  model: tencentcodingplan/glm-5
+  prompt: "你是AI历史学家。请使用 web_search 工具（通过 Brave）检索 {topic} 的背景、发展脉络和经典范式，并给出带有引用的总结。"
+
+agent sota_reader:
+  model: tencentcodingplan/glm-5
+  prompt: "你是前沿论文分析师。请使用 web_search 查找 {topic} 在 arXiv 上的最新学术讨论和论文，使用 web_fetch 抓取论文摘要页面。对于高度相关的研究，请使用 pdf 工具直接读取全文，并总结其核心方案与存在的痛点。"
+
+agent data_miner:
+  model: tencentcodingplan/glm-5
+  prompt: "你是文献数据挖掘专家。请使用 exec 工具执行本地脚本 `python3 {baseDir}/query_scholar.py \"{topic}\"`，获取 Semantic Scholar 上的高被引论文网络数据、作者和引用关系，并提炼出最关键的文献参考。"
+
+parallel:
+  history_report = session: historian
+  prompt: "梳理 {topic} 的发展脉络。"
+  
+  sota_report = session: sota_reader
+  prompt: "分析 {topic} 的最新 SOTA 研究方案和技术瓶颈。"
+
+  data_report = session: data_miner
+  prompt: "获取 {topic} 的核心文献网络与高频引用数据。"
+
+session "Synthesize Research Report"
+  model: tencentcodingplan/glm-5
+  context: { history_report, sota_report, data_report }
+  prompt: "你是一位顶级AI研究员。请结合上述的历史脉络、SOTA分析和核心文献数据，生成一份结构化的深度科研报告。报告必须包含：1. 发展脉络；2. 现有主流方案对比与痛点分析；3. 结合这些痛点，推导出 3-5 个具有高度学术价值和可行性的新方向或论文创新点 (Idea)。"
